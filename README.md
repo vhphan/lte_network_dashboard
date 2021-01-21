@@ -1,4 +1,4 @@
-# vuetify-sb
+# LTE Network Dashboard
 
 ## Project setup
 ```
