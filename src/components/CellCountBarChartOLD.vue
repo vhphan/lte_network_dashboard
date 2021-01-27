@@ -7,7 +7,7 @@
       <v-list-item two-line>
         <v-list-item-content>
           <v-list-item-title class="headline">
-            {{ this.selectedMeasure }}
+            {{ this.selectedRegion }}
           </v-list-item-title>
           <v-list-item-subtitle>Total Number of Sites</v-list-item-subtitle>
         </v-list-item-content>
@@ -44,84 +44,65 @@
 </template>
 
 <script>
-import ECharts from 'vue-echarts';
 import 'echarts/lib/chart/line';
 import 'echarts/lib/component/polar';
 import 'echarts/lib/chart/bar';
 import 'echarts/lib/component/tooltip'
 import 'echarts/lib/component/legend'
 import 'echarts/lib/component/title'
-import wonderland from '@/components/chartThemes/wonderland.json';
 
-ECharts.registerTheme('wonderland', wonderland['theme'])
 
 export default {
-  components: {
-    'v-chart': ECharts
-  },
-  name: "SiteCountBarChart",
+  // components: {
+  //   'v-chart': ECharts
+  // },
+  name: "CellCountBarChart",
   computed: {
     percentTotalSites() {
       return (100 * this.totalSites / this.grandTotalSites).toFixed(1);
     },
     grandTotalSites() {
-      let rawData = this.chartData.filter(d => {
-            return (d[this.groupByMeasure] && d['SystemID'] && d['SystemID'].startsWith(this.selectedTechnology))
+      let rawRegionData = this.chartData.filter(d => {
+            return (d['Region'] && d['SystemID'] && d['SystemID'].startsWith(this.selectedTechnology))
           }
       );
-      let barData = this.rowsUnpack(rawData, 'SiteCount');
+      let barData = this.rowsUnpack(rawRegionData, 'CellCount');
       return barData.reduce(function (a, b) {
         return a + b;
       }, 0);
     },
+
     totalSites() {
-      let rawData = this.chartData.filter(d => {
-            return (d[this.groupByMeasure] === this.selectedMeasure && d['SystemID'] && d['SystemID'].startsWith(this.selectedTechnology))
+      let rawRegionData = this.chartData.filter(d => {
+            return (d['Region'] === this.selectedRegion && d['SystemID'] && d['SystemID'].startsWith(this.selectedTechnology))
           }
       );
-      let barData = this.rowsUnpack(rawData, 'SiteCount');
+      let barData = this.rowsUnpack(rawRegionData, 'CellCount');
       return barData.reduce(function (a, b) {
         return a + b;
       }, 0);
     },
     chartOptions() {
 
-      let rawData = this.chartData.filter(d => {
-            return (d[this.groupByMeasure] === this.selectedMeasure && d['SystemID'] && d['SystemID'].startsWith(this.selectedTechnology))
+      let rawRegionData = this.chartData.filter(d => {
+            return (d['Region'] === this.selectedRegion && d['SystemID'] && d['SystemID'].startsWith(this.selectedTechnology))
           }
       );
-      let measureData;
-      let context = this;
-      switch (this.groupByMeasure) {
-        case 'Layer':
-          context.sortOrder = ['CENTRAL', 'EASTERN', 'SABAH', 'SARAWAK'];
-          context.sortKey = 'Region';
-          break;
-        case 'Region':
-          context.sortOrder = ['L9', 'L18', 'L21', 'L26'];
-          context.sortKey = 'SystemID';
-          break;
-        default:
-          context.sortOrder = false;
-          // code block
-      }
-      if (context.sortOrder.length) {
-        measureData = rawData.sort(function (a, b) {
-          return context.sortOrder.indexOf(a[context.sortKey]) - context.sortOrder.indexOf(b[context.sortKey]);
-        });
-      } else {
-        measureData = rawData;
-      }
 
-      let categoryKey='Region';
-      let categories = this.rowsUnpack(measureData, categoryKey);
-      let barData = this.rowsUnpack(measureData, 'SiteCount');
+      let sortOrder = ['L9', 'L18', 'L21', 'L26'];
+      let regionData = rawRegionData.sort(function (a, b) {
+        return sortOrder.indexOf(a['SystemID']) - sortOrder.indexOf(b['SystemID']);
+      });
+
+      let technology = this.rowsUnpack(regionData, 'SystemID');
+      let barData = this.rowsUnpack(regionData, 'CellCount');
 
 
       return {
+        // backgroundColor: '#eaecf1',
         title: {
           top: 30,
-          text: this.selectedMeasure,
+          text: this.selectedRegion,
           subtext: '',
           x: 'center',
           textStyle: {
@@ -130,8 +111,8 @@ export default {
         },
         tooltip: {
           trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
+          axisPointer: { // 坐标轴指示器，坐标轴触发有效
+            type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
           },
           show: true,
           formatter: function (params) {
@@ -155,7 +136,7 @@ export default {
         },
         yAxis: {
           type: 'category',
-          data: categories
+          data: technology
         },
         series: [
           {
@@ -173,10 +154,9 @@ export default {
   },
   props: {
     chartData: Array,
-    selectedMeasure: String,
+    selectedRegion: String,
     selectedTechnology: String,
     maxOfX: Number,
-    groupByMeasure: String
   },
   created() {
     ECharts['connect']('radiance');
@@ -188,10 +168,7 @@ export default {
   }
   ,
   data() {
-    return {
-      sortOrder: [],
-      sortKey: ''
-    }
+    return {}
   }
 }
 </script>

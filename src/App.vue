@@ -1,17 +1,23 @@
 <template>
   <v-app class="grey lighten-4">
-    <Navbar/>
+    <Navbar>
+      <template slot="app-bar-content">
+        <h6>Test</h6>
+      </template>
+    </Navbar>
 
     <v-main>
-      <v-alert
-          color="red"
-          dismissible
-          type="error"
-          v-if="$store.state.error.show"
-      >
-        {{ $store.state.error.text }}
-      </v-alert>
-      <router-view></router-view>
+      <v-container>
+        <v-alert
+            color="red"
+            dismissible
+            type="error"
+            v-if="$store.state.error.show"
+        >
+          {{ $store.state.error.text }}
+        </v-alert>
+        <router-view></router-view>
+      </v-container>
     </v-main>
     <v-snackbar
         v-model="snackbar"
@@ -57,6 +63,9 @@ export default {
     setTimeout(function () {
       showSnackbar('Welcome');
     }, 1000);
+    this.$store.dispatch('getCellCounts')
+    this.$store.dispatch('getSiteCounts')
+
   }
 }
 </script>

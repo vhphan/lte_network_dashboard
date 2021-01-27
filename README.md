@@ -1,4 +1,4 @@
-# vuetify-sb
+# LTE Network Dashboard Using Vue.js
 
 ## Project setup
 ```

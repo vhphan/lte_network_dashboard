@@ -5,11 +5,11 @@
 </template>
 
 <script>
-import SiteCountBarChart from "@/components/SiteCountBarChart";
+import CellCountBarChart from "@/components/CellCountBarChartOLD";
 
 export default {
   name: "TestEChart",
-  components: {SiteCountBarChart}
+  components: {CellCountBarChart}
   ,
   created() {
   }

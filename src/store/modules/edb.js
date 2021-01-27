@@ -5,11 +5,16 @@ Vue.use(Vuex);
 
 export default {
     state: {
+        cellCount: [],
         siteCount: [],
         groupByItem: 'Region',
-        selectedTechnology: 'LTE'
+        selectedTechnology: 'LTE',
+        countType: 'Cell'
     },
     mutations: {
+        setCellCount(state, cellCount) {
+            state.cellCount = cellCount;
+        },
         setSiteCount(state, siteCount) {
             state.siteCount = siteCount;
         },
@@ -18,6 +23,9 @@ export default {
         },
         setSelectedTechnology(state, newSelectedTechnology){
             state.selectedTechnology = newSelectedTechnology;
+        },
+        setSelectedCountType(state, newSelectedCountType){
+            state.countType = newSelectedCountType;
         },
 
     },
@@ -29,10 +37,30 @@ export default {
         setSelectedTechnology(context, newSelectedTechnology){
             context.commit('setSelectedTechnology', newSelectedTechnology);
         },
-        async getsiteCounts(context) {
+        setSelectedCountType(context, newSelectedCountType){
+            context.commit('setSelectedCountType', newSelectedCountType);
+        },
+        async getCellCounts(context) {
             try {
-                const rawSiteCount = (await this._vm.$ePortal.get('/network')).data;
-                const siteCount = rawSiteCount.map(
+                const rawCellCount = (await this._vm.$ePortal.get('/network')).data;
+                const cellCount = rawCellCount.map(
+                    d => {
+                        if (d['SystemID'] && d['SystemID'].startsWith('W')){
+                            d['SystemID'].replace('W', 'U');
+                        }
+                        return d;
+                    }
+                )
+                context.commit('setCellCount', cellCount)
+            } catch (error) {
+                context.commit('showError', error);
+                console.log(error);
+            }
+        },
+         async getSiteCounts(context) {
+            try {
+                const rawCellCount = (await this._vm.$ePortal.get('/network/site')).data;
+                const siteCount = rawCellCount.map(
                     d => {
                         if (d['SystemID'] && d['SystemID'].startsWith('W')){
                             d['SystemID'].replace('W', 'U');
@@ -41,7 +69,6 @@ export default {
                     }
                 )
                 context.commit('setSiteCount', siteCount)
-                console.log('siteCount', siteCount);
             } catch (error) {
                 context.commit('showError', error);
                 console.log(error);
